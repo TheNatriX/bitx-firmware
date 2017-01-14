@@ -98,10 +98,12 @@ static void process_event(void)
 	switch (event) {
 		case DIAL_UP:
 		frequency.hz += frequency.step;
+		dds_write_freq(frequency.hz);
 		break;
 
 		case DIAL_DOWN:
 		frequency.hz -= frequency.step;
+		dds_write_freq(frequency.hz);
 		break;
 
 		case PUSH_BTN:
@@ -135,11 +137,10 @@ int main(void)
 
 	/* TODO: READ EEPROM FOR SAVED VALUES */
 
-	frequency_init();
-
 	spi_init();
+	frequency_init();
+	dds_init(frequency.hz);
 
-	/* TODO: SET FREQ */
 	/* TODO: CONFIG VOLTMETER */
 	/* TODO: CONFIG SMETER */
 

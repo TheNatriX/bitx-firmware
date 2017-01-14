@@ -7,14 +7,17 @@ INCDIR=../avr-dev/drivers/hd44780/include/
 LIBS=../avr-dev/drivers/hd44780/bin/hd44780_atmega32_3686400.a
 
 CC=avr-gcc
-CFLAGS=-Wall -O2 -g3 -std=c99
+CFLAGS=-Wall -g3 -O1
 
 OBJCOPY=avr-objcopy
 OBJOPT=-O ihex -j .text -j .data
 
 all:
 	$(CC) $(CFLAGS) -mmcu=$(MCU) -DF_CPU=$(F_CPU) \
-		-I$(INCDIR) $(SRCDIR)/main.c $(LIBS) -o $(BINDIR)/firmware.elf
+		-I$(INCDIR) $(SRCDIR)/main.c -c -o $(BINDIR)/main.o
+	$(CC) $(CFLAGS) -mmcu=$(MCU) -DF_CPU=$(F_CPU) \
+		-I$(INCDIR) $(SRCDIR)/ad9837.c -c -o $(BINDIR)/ad9837.o
+	$(CC) $(BINDIR)/main.o $(BINDIR)/ad9837.o -o $(BINDIR)/firmware.elf $(LIBS)
 
 	$(OBJCOPY) $(OBJOPT) $(BINDIR)/firmware.elf $(BINDIR)/firmware.hex
 
