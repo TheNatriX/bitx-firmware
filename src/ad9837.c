@@ -10,16 +10,6 @@ uint16_t ControlRegister;
 
 
 void
-spi_master_send(uint8_t byte)
-{
-	/* Start transmission */
-	SPDR = byte;
-	/* Wait for transmission complete */
-	while (!(SPSR & (1 << SPIF)));
-}
-
-
-void
 dds_write_word(uint16_t word)
 {
 	SPI_SS_LOW;

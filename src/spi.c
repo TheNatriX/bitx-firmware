@@ -28,3 +28,14 @@ spi_init(void)
 	SPI_SS_HIGH;
 } 
 
+
+extern void
+spi_master_send(uint8_t byte)
+{
+	/* Start transmission */
+	SPDR = byte;
+	/* Wait for transmission complete */
+	while (!(SPSR & (1 << SPIF)));
+}
+
+
