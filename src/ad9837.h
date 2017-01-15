@@ -15,8 +15,8 @@
 #define MODE	1	/* Use/bypass SIN_ROM; 0 = sinwave / 1 = triangle	*/
 
 
-#define DDS_MLCK		16000000
-#define FREQ_TO_DDS(x)		(x) = ((uint32_t) (((x) * 268435456) / DDS_MLCK))
+#define DDS_MCLK		16000000
+#define FREQ_TO_DDS(x)		(x) = ((uint32_t) (((x) * 268435456) / DDS_MCLK))
 #define PACKET_HEAD(x,y)	(x) |= (y)
 #define GET_14_MSB(x)		((uint16_t) (((x) >> 14) & 0x3fff))
 #define GET_14_LSB(x)		((uint16_t) ((x) & 0x3fff))
