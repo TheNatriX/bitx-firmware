@@ -114,13 +114,12 @@ int main(void)
 	spi_init();
 	frequency_init();
 	dds_init(frequency.hz);
-
 	adc_init();
+	encoder_init();
 
 	/* TODO: CONFIG VOLTMETER */
 	/* TODO: CONFIG SMETER */
 
-	encoder_init();
 	sei();
 
 	for (;;) {
@@ -129,14 +128,12 @@ int main(void)
 		 */
 		_delay_ms(1);
 
-		cli();
 		if (event)
 			process_event();
 		else {
 			/* TODO: READ VOLTAGE */
 			/* TODO: READ Smeter */
 		}
-		sei();
 	}
 	return -1;
 }

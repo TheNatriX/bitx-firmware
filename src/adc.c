@@ -1,31 +1,46 @@
 #include <avr/io.h>
 #include <avr/sleep.h>
+#include <avr/interrupt.h>
 #include "mcu.h"
 
 extern void inline
 adc_init(void)
 {
-	/* Clear ADMUX and Set VREF 2.56V */
-	ADMUX = (1 << REFS1) | (1 << REFS0);
+	/*	Set VREF 2.56V			*/
+	ADMUX = (uint8_t) (1 << REFS1) | (1 << REFS0);
 
-	/* Clear ADCSRA.
-	 * Set Prescaler Fmclk/32 FIXME: for 16mhz cpu, prescaler = Fmclk/128.
-	 * Enable ADC Interrupt.
-	 * Turn ON ADC Circuitry.
-	 */
-	ADCSRA = (1 << ADIE) | (1 << ADEN) | (1 << ADPS2) | (1 << ADPS0);
+	/*	Set Prescaler Fmclk/32		*/
+	/*	FIXME: 16mhz cpu => Fmclk/128	*/
+	/*	Enable ADC Interrupt		*/
+	ADCSRA = (uint8_t) (1 << ADIE) | (1 << ADPS2) | (1 << ADPS0);
 }
 
 extern void
 adc_start_conversion(uint8_t pin)
 {
-	/* Using Single Conversion Mode */
-	ADMUX |= (pin & 0x1f);
+	/*
+	 * Since sleep_* macros will modify the MCUCR register,
+	 * we need to restore it back later.
+	 * */
+	uint8_t register saved = MCUCR;
 
-	/* Enable MCU Sleep and ADC Noise Reduction Sleep Mode */
-//	MCUCR |= (1 << SE) | (1 << SM0);
+	/*	Using Single Conversion for pin	*/
+	ADMUX &= 0xe0;
+	ADMUX |= (uint8_t) (pin & 0x1f);
 
-	/* Enter Sleep Mode */
-//	sleep_cpu();
+	/*	Enable ADC Circuitry		*/
+	ADCSRA |= (uint8_t) (1 << ADEN);
+
+	/*	ADC Noise Reduction Sleep Mode	*/
+	set_sleep_mode(SLEEP_MODE_ADC);
+	sleep_enable();
+	sei();
+	sleep_cpu();
+
+	/*	Disable ADC Circuitry		*/
+	ADCSRA &= (uint8_t) ~(1 << ADEN);
+
+	/*	Restore MCUCR			*/
+	MCUCR = saved;
 }
 
