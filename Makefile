@@ -18,8 +18,10 @@ all:
 	$(CC) $(CFLAGS) -mmcu=$(MCU) -DF_CPU=$(F_CPU) \
 		-I$(INCDIR) $(SRCDIR)/spi.c -c -o $(BINDIR)/spi.o
 	$(CC) $(CFLAGS) -mmcu=$(MCU) -DF_CPU=$(F_CPU) \
+		-I$(INCDIR) $(SRCDIR)/adc.c -c -o $(BINDIR)/adc.o
+	$(CC) $(CFLAGS) -mmcu=$(MCU) -DF_CPU=$(F_CPU) \
 		-I$(INCDIR) $(SRCDIR)/ad9837.c -c -o $(BINDIR)/ad9837.o
-	$(CC) $(BINDIR)/main.o $(BINDIR)/ad9837.o $(BINDIR)/spi.o \
+	$(CC) $(BINDIR)/main.o $(BINDIR)/ad9837.o $(BINDIR)/spi.o $(BINDIR)/adc.o \
 		-o $(BINDIR)/firmware.elf $(LIBS)
 	$(OBJCOPY) $(OBJOPT) $(BINDIR)/firmware.elf $(BINDIR)/firmware.hex
 

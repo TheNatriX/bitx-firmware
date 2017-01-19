@@ -115,6 +115,8 @@ int main(void)
 	frequency_init();
 	dds_init(frequency.hz);
 
+	adc_init();
+
 	/* TODO: CONFIG VOLTMETER */
 	/* TODO: CONFIG SMETER */
 
