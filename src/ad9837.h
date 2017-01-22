@@ -16,10 +16,10 @@
 
 
 #define DDS_MCLK		16000000
-#define FREQ_TO_DDS(x)		(x) = ((uint32_t) (((x) * 268435456) / DDS_MCLK))
+#define FREQ_TO_DDS(x)		(x) = ((((float)(x)) / DDS_MCLK) * 0x10000000)
 #define PACKET_HEAD(x,y)	(x) |= (y)
-#define GET_14_MSB(x)		((uint16_t) (((x) >> 14) & 0x3fff))
-#define GET_14_LSB(x)		((uint16_t) ((x) & 0x3fff))
+#define GET_14_MSB(x)		(((x) & 0x0fffc000) >> 14)
+#define GET_14_LSB(x)		((x) & 0x00003fff)
 
 
 #define CTRL_REG		0x0000
@@ -27,6 +27,5 @@
 #define FREQ1			0x8000
 #define PHASE0			0xc000
 #define PHASE1			0xe000
-
 
 

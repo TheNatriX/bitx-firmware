@@ -16,24 +16,25 @@ dds_write_word(uint16_t word)
 	spi_master_send((uint8_t) ((word & 0xff00) >> 8));
 	spi_master_send((uint8_t) (word & 0x00ff));
 	SPI_SS_HIGH;
-	_delay_ms(1); /* TODO do we need this ? */
 }
 
 
 void
 dds_write_freq(uint32_t freq)
 {
-	uint16_t tmp16 = 0;
+	uint16_t dds_lsb;
+	uint16_t dds_msb;
 
 	FREQ_TO_DDS(freq);
 
-	tmp16 = GET_14_LSB(freq);
-	PACKET_HEAD(tmp16, FREQ0);
-	dds_write_word(tmp16);
+	dds_lsb = GET_14_LSB(freq);
+	dds_msb = GET_14_MSB(freq);
 
-	tmp16 = GET_14_MSB(freq);
-	PACKET_HEAD(tmp16, FREQ0);
-	dds_write_word(tmp16);
+	PACKET_HEAD(dds_lsb, FREQ0);
+	PACKET_HEAD(dds_msb, FREQ0);
+
+	dds_write_word(dds_lsb);
+	dds_write_word(dds_msb);
 }
 
 
