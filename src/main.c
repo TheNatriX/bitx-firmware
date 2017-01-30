@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include "lcd.h"
 #include "mcu.h"
+#include "spi.h"
+#include "rf_platform.h"
+
 
 struct frequency
 {
@@ -14,12 +17,16 @@ struct frequency
 	uint32_t step;
 } frequency;
 
+
 static uint8_t event = 0;
 #define	DIAL_UP		1
 #define DIAL_DOWN	2
 #define PUSH_BTN	3
 
+
 static uint8_t isr_lock = 0;
+
+
 ISR(INT0_vect)
 {
 	if (!isr_lock)
@@ -27,6 +34,7 @@ ISR(INT0_vect)
 	else if (!event)
 		event = DIAL_DOWN;
 }
+
 
 ISR(INT1_vect)
 {
@@ -36,10 +44,12 @@ ISR(INT1_vect)
 		event = DIAL_UP;
 }
 
+
 ISR(INT2_vect)
 {
 	if (!event) event = PUSH_BTN;
 }
+
 
 static void inline
 clear_events(void)
@@ -47,6 +57,7 @@ clear_events(void)
 	event = 0;
 	isr_lock = 0;
 }
+
 
 static void inline
 encoder_init(void)
@@ -66,23 +77,26 @@ encoder_init(void)
 	GICR |= (1 << INT0 | 1 << INT1 | 1 << INT2);
 }
 
-static void process_event(void)
+
+static void
+process_event(void)
 {
 	char buffer[100];
+
 	switch (event) {
 		case DIAL_UP:
 		frequency.hz += frequency.step;
-		dds_write_freq(frequency.hz);
+		dds_write_freq(FREQ_TO_PLATFORM(frequency.hz));
 		break;
 
 		case DIAL_DOWN:
 		frequency.hz -= frequency.step;
-		dds_write_freq(frequency.hz);
+		dds_write_freq(FREQ_TO_PLATFORM(frequency.hz));
 		break;
 
 		case PUSH_BTN:
 		frequency.step *= 10;
-		if (frequency.step == 1000000L)
+		if (frequency.step == 1000000)
 			frequency.step = 1;
 		break;
 	}
@@ -97,25 +111,36 @@ static void inline
 frequency_init(void)
 {
 	frequency.hz = 3705000;
-	frequency.step = 10;
+	frequency.step = 1000;
 }
+
+
+static void inline
+light_init(void)
+{
+	// TODO: make it more elegant!
+	DDRC |= (1 << PC0);
+	PORTC |= (1 << PC0);
+}
+
 
 int main(void)
 {
-
+	/* TODO: Make these more elegant */
 	lcd_init(LCD_SET_TWO_LINES);
-	lcd_print("Version 0.1.2017");
+	lcd_print("Version 0.2.2017");
 	lcd_send_instr(LCD_INSTR_SET_DDRAM | 0x40);
 	lcd_print("73's  DE  YO3HXT");
-	_delay_ms(1000);
 
 	/* TODO: READ EEPROM FOR SAVED VALUES */
 
 	spi_init();
 	frequency_init();
-	dds_init(frequency.hz);
-	adc_init();
+	dds_init(FREQ_TO_PLATFORM(frequency.hz));
+//	adc_init();
 	encoder_init();
+	light_init();
+
 
 	/* TODO: CONFIG VOLTMETER */
 	/* TODO: CONFIG SMETER */
@@ -128,12 +153,11 @@ int main(void)
 		 */
 		_delay_ms(1);
 
+		/* TODO: READ VOLTAGE */
+		/* TODO: READ Smeter */
+
 		if (event)
 			process_event();
-		else {
-			/* TODO: READ VOLTAGE */
-			/* TODO: READ Smeter */
-		}
 	}
 	return -1;
 }

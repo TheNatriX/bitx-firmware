@@ -1,0 +1,7 @@
+
+#define IF_OFFSET		9833120
+#define OFFSET_OPERATION	-
+
+#define FREQ_TO_PLATFORM(x)	(IF_OFFSET OFFSET_OPERATION (x))
+
+
