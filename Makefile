@@ -7,7 +7,7 @@ INCDIR=../avr-dev/drivers/hd44780/include/
 LIBS=../avr-dev/drivers/hd44780/bin/hd44780_atmega32_3686400.a
 
 CC=avr-gcc
-CFLAGS=-Wall -g3 -O2 -pipe -gstabs -std=c99
+CFLAGS=-Wall -g3 -O2 -pipe -gstabs -std=c99 -Wl,-u,vfprintf -lprintf_flt -lm
 
 OBJCOPY=avr-objcopy
 OBJOPT=-O ihex -j .text -j .data
