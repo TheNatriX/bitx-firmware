@@ -10,6 +10,7 @@
 #include "spi.h"
 #include "rf_platform.h"
 
+#define ADC_TO_BAT_VOLTAGE(x)	(((2.519 * (float) (x)) / 1024) * 7.77)
 
 struct frequency
 {
@@ -25,6 +26,8 @@ static uint8_t event = 0;
 
 
 static uint8_t isr_lock = 0;
+static uint16_t bat_voltage = 0;
+static uint16_t last_bat_voltage = 0;
 
 
 ISR(INT0_vect)
@@ -48,6 +51,14 @@ ISR(INT1_vect)
 ISR(INT2_vect)
 {
 	if (!event) event = PUSH_BTN;
+}
+
+
+ISR(ADC_vect)
+{
+	bat_voltage = ADCL;
+	bat_voltage |= ((ADCH & 0x03) << 8);
+	bat_voltage &= 0xfffc;
 }
 
 
@@ -78,7 +89,7 @@ encoder_init(void)
 }
 
 
-static void
+static void inline
 process_event(void)
 {
 	char buffer[100];
@@ -101,7 +112,9 @@ process_event(void)
 		break;
 	}
 	lcd_send_instr(LCD_INSTR_CLEAR_DISPLAY);
-	sprintf(buffer, "FREQ: %lu Hz", frequency.hz);
+	sprintf(buffer, "%4.1fV  %lu",
+			ADC_TO_BAT_VOLTAGE(bat_voltage),
+			frequency.hz);
 	lcd_print(buffer);
 	clear_events();
 }
@@ -126,19 +139,15 @@ light_init(void)
 
 int main(void)
 {
-	/* TODO: Make these more elegant */
-	lcd_init(LCD_SET_TWO_LINES);
-	lcd_print("Version 0.2.2017");
-	lcd_send_instr(LCD_INSTR_SET_DDRAM | 0x40);
-	lcd_print("73's  DE  YO3HXT");
-
+	char buffer[100];
 	/* TODO: READ EEPROM FOR SAVED VALUES */
 
 	spi_init();
 	frequency_init();
 	dds_init(FREQ_TO_PLATFORM(frequency.hz));
-//	adc_init();
+	adc_init();
 	encoder_init();
+	lcd_init(LCD_SET_TWO_LINES);
 	light_init();
 
 
@@ -151,9 +160,19 @@ int main(void)
 		/* FIXME: this delay should be implemented by timer,
 		 * while putting CPU to sleep.
 		 */
-		_delay_ms(1);
+		_delay_ms(10);
 
 		/* TODO: READ VOLTAGE */
+		adc_start_conversion(PA0);
+		if (bat_voltage != last_bat_voltage) {
+			lcd_send_instr(LCD_INSTR_RETURN_HOME);
+			sprintf(buffer, "%4.1fV  %lu",
+					ADC_TO_BAT_VOLTAGE(bat_voltage),
+					frequency.hz);
+			lcd_print(buffer);
+			last_bat_voltage = bat_voltage;
+		}
+
 		/* TODO: READ Smeter */
 
 		if (event)
