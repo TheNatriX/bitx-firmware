@@ -62,8 +62,10 @@ clear_events(void)
 static void inline
 process_event(void)
 {
-	char buffer[100];
 
+#define LCD_FREQ_POSITION	7
+
+	char buffer[16];
 	switch (event) {
 		case DIAL_UP:
 		frequency.hz += frequency.step;
@@ -81,11 +83,9 @@ process_event(void)
 			frequency.step = 1;
 		break;
 	}
-//	lcd_send_instr(LCD_INSTR_CLEAR_DISPLAY);
-//	sprintf(buffer, "%4.1fV  %lu",
-//			ADC_TO_BAT_VOLTAGE(bat_voltage),
-//			frequency.hz);
-//	lcd_print(buffer);
+	sprintf(buffer, "%lu", frequency.hz);
+	lcd_send_instr(LCD_INSTR_SET_DDRAM | LCD_FREQ_POSITION);
+	lcd_print(buffer);
 	clear_events();
 }
 
