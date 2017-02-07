@@ -17,6 +17,8 @@ all:
 		-I$(INCDIR)				\
 		-o $(BINDIR)/firmware.elf		\
 		$(SRCDIR)/main.c			\
+		$(SRCDIR)/encoder.c			\
+		$(SRCDIR)/voltage.c			\
 		$(SRCDIR)/spi.c				\
 		$(SRCDIR)/adc.c				\
 		$(SRCDIR)/ad9837.c			\

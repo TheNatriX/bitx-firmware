@@ -10,7 +10,6 @@
 #include "spi.h"
 #include "rf_platform.h"
 
-#define ADC_TO_BAT_VOLTAGE(x)	(((2.519 * (float) (x)) / 1024) * 7.77)
 
 struct frequency
 {
@@ -26,8 +25,6 @@ static uint8_t event = 0;
 
 
 static uint8_t isr_lock = 0;
-static uint16_t bat_voltage = 0;
-static uint16_t last_bat_voltage = 0;
 
 
 ISR(INT0_vect)
@@ -54,38 +51,11 @@ ISR(INT2_vect)
 }
 
 
-ISR(ADC_vect)
-{
-	bat_voltage = ADCL;
-	bat_voltage |= ((ADCH & 0x03) << 8);
-	bat_voltage &= 0xfffc;
-}
-
-
 static void inline
 clear_events(void)
 {
 	event = 0;
 	isr_lock = 0;
-}
-
-
-static void inline
-encoder_init(void)
-{
-	/* Set INT0, INT1, INT2 as pulled-up input */
-	DDR_INT0 &= ~(1 << PIN_INT0);
-	DDR_INT1 &= ~(1 << PIN_INT1);
-	DDR_INT2 &= ~(1 << PIN_INT2);
-	PORT_INT0 |= (1 << PIN_INT0);
-	PORT_INT1 |= (1 << PIN_INT1);
-	PORT_INT2 |= (1 << PIN_INT2);
-	/* Set INT0, INT1, INT2 as falling edge interrupt */
-	MCUCR |= (1 << ISC01) | (1 << ISC11);
-	MCUCR &= ~(1 << ISC00) | (1 << ISC10);
-	MCUCSR &= ~(1 << ISC2);
-	/* Enable interrupts at INT0, INT1, INT2 */
-	GICR |= (1 << INT0 | 1 << INT1 | 1 << INT2);
 }
 
 
@@ -111,11 +81,11 @@ process_event(void)
 			frequency.step = 1;
 		break;
 	}
-	lcd_send_instr(LCD_INSTR_CLEAR_DISPLAY);
-	sprintf(buffer, "%4.1fV  %lu",
-			ADC_TO_BAT_VOLTAGE(bat_voltage),
-			frequency.hz);
-	lcd_print(buffer);
+//	lcd_send_instr(LCD_INSTR_CLEAR_DISPLAY);
+//	sprintf(buffer, "%4.1fV  %lu",
+//			ADC_TO_BAT_VOLTAGE(bat_voltage),
+//			frequency.hz);
+//	lcd_print(buffer);
 	clear_events();
 }
 
@@ -139,7 +109,8 @@ light_init(void)
 
 int main(void)
 {
-	char buffer[100];
+	uint16_t skip_voltage_reading = 0;
+
 	/* TODO: READ EEPROM FOR SAVED VALUES */
 
 	spi_init();
@@ -151,7 +122,6 @@ int main(void)
 	light_init();
 
 
-	/* TODO: CONFIG VOLTMETER */
 	/* TODO: CONFIG SMETER */
 
 	sei();
@@ -162,15 +132,11 @@ int main(void)
 		 */
 		_delay_ms(10);
 
-		/* TODO: READ VOLTAGE */
-		adc_start_conversion(PA0);
-		if (bat_voltage != last_bat_voltage) {
-			lcd_send_instr(LCD_INSTR_RETURN_HOME);
-			sprintf(buffer, "%4.1fV  %lu",
-					ADC_TO_BAT_VOLTAGE(bat_voltage),
-					frequency.hz);
-			lcd_print(buffer);
-			last_bat_voltage = bat_voltage;
+		/* Display battery voltage */
+		skip_voltage_reading++;
+		if (skip_voltage_reading == 1000) {
+			skip_voltage_reading = 0;
+			show_voltage();
 		}
 
 		/* TODO: READ Smeter */
