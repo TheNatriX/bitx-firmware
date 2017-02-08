@@ -10,8 +10,6 @@ HARDWARE:
 SOFTWARE:
 ---------
 - Fix encoder direction.
-- Fix voltmeter flickering.
-- Split frequency by commas.
 - Frequency digit select.
 - Display S strength on LCD.
 - Menu items.
