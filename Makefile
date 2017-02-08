@@ -1,5 +1,6 @@
 MCU=atmega32
 F_CPU=16000000
+VERSION=v1.0
 
 BINDIR=bin
 SRCDIR=src
@@ -13,7 +14,8 @@ OBJCOPY=avr-objcopy
 OBJOPT=-O ihex -j .text -j .data
 
 all:
-	$(CC) $(CFLAGS) -mmcu=$(MCU) -DF_CPU=$(F_CPU)	\
+	$(CC) $(CFLAGS) -mmcu=$(MCU)			\
+		-DF_CPU=$(F_CPU) -DVERSION=$(VERSION)	\
 		-I$(INCDIR)				\
 		-o $(BINDIR)/firmware.elf		\
 		$(SRCDIR)/main.c			\

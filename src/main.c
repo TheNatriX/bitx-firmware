@@ -23,6 +23,7 @@ static uint8_t event = 0;
 #define DIAL_DOWN	2
 #define PUSH_BTN	3
 
+#define LCD_FREQ_POSITION	7
 
 static uint8_t isr_lock = 0;
 
@@ -59,11 +60,28 @@ clear_events(void)
 }
 
 
+static void
+frequency_commas(char *s)
+{
+	char *p = s;
+	char buffer[16];
+
+	memset(buffer, 0, sizeof(buffer));
+	buffer[0] = *p;
+	buffer[1] = '.';
+	p++;
+	strncat(buffer, p, 3);
+	strcat(buffer, ".");
+	p += 3;
+	strncat(buffer, p, 3);
+	strcpy(s, buffer);
+}
+
+
 static void inline
 process_event(void)
 {
 
-#define LCD_FREQ_POSITION	7
 
 	char buffer[16];
 	switch (event) {
@@ -84,6 +102,7 @@ process_event(void)
 		break;
 	}
 	sprintf(buffer, "%lu", frequency.hz);
+	frequency_commas(buffer);
 	lcd_send_instr(LCD_INSTR_SET_DDRAM | LCD_FREQ_POSITION);
 	lcd_print(buffer);
 	clear_events();
@@ -109,6 +128,7 @@ light_init(void)
 
 int main(void)
 {
+	char buffer[16];
 	uint16_t skip_voltage_reading = 0;
 
 	/* TODO: READ EEPROM FOR SAVED VALUES */
@@ -124,13 +144,20 @@ int main(void)
 
 	/* TODO: CONFIG SMETER */
 
+	sprintf(buffer, "%lu", frequency.hz);
+	frequency_commas(buffer);
+	lcd_send_instr(LCD_INSTR_SET_DDRAM | LCD_FREQ_POSITION);
+	lcd_print(buffer);
+	lcd_send_instr(LCD_INSTR_SET_DDRAM | 0x40);
+	lcd_print("  YO3HXT  v1.0  ");
+
 	sei();
 
 	for (;;) {
 		/* FIXME: this delay should be implemented by timer,
 		 * while putting CPU to sleep.
 		 */
-		_delay_ms(10);
+		_delay_ms(1);
 
 		/* Display battery voltage */
 		skip_voltage_reading++;
