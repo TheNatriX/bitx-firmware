@@ -1,6 +1,6 @@
 MCU=atmega32
 F_CPU=16000000
-VERSION=v1.0
+VERSION=\"v1.2\"
 
 BINDIR=bin
 SRCDIR=src
@@ -20,6 +20,7 @@ all:
 		-o $(BINDIR)/firmware.elf		\
 		$(SRCDIR)/main.c			\
 		$(SRCDIR)/encoder.c			\
+		$(SRCDIR)/tick.c			\
 		$(SRCDIR)/voltage.c			\
 		$(SRCDIR)/spi.c				\
 		$(SRCDIR)/adc.c				\

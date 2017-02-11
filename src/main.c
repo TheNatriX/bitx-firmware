@@ -125,7 +125,6 @@ light_init(void)
 	PORTC |= (1 << PC0);
 }
 
-
 int main(void)
 {
 	char buffer[16];
@@ -140,6 +139,7 @@ int main(void)
 	encoder_init();
 	lcd_init(LCD_SET_TWO_LINES);
 	light_init();
+	tick_init();
 
 
 	/* TODO: CONFIG SMETER */
@@ -149,24 +149,22 @@ int main(void)
 	lcd_send_instr(LCD_INSTR_SET_DDRAM | LCD_FREQ_POSITION);
 	lcd_print(buffer);
 	lcd_send_instr(LCD_INSTR_SET_DDRAM | 0x40);
-	lcd_print("  YO3HXT  v1.0  ");
-
-	sei();
+	lcd_print("  YO3HXT  "VERSION"  ");
 
 	for (;;) {
-		/* FIXME: this delay should be implemented by timer,
-		 * while putting CPU to sleep.
-		 */
-		_delay_ms(1);
 
-		/* Display battery voltage */
-		skip_voltage_reading++;
-		if (skip_voltage_reading == 1000) {
-			skip_voltage_reading = 0;
-			show_voltage();
+		sei();
+
+		if (tick()) {
+			/* Display battery voltage */
+			skip_voltage_reading++;
+			if (skip_voltage_reading == 35) {
+				skip_voltage_reading = 0;
+				show_voltage();
+			}
+
+			/* TODO: READ Smeter */
 		}
-
-		/* TODO: READ Smeter */
 
 		if (event)
 			process_event();
