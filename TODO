@@ -11,6 +11,7 @@ SOFTWARE:
 ---------
 - Fix encoder direction.
 - Frequency digit select.
+- Frequency band limits.
 - Display S strength on LCD.
 - Menu items.
 - Lock input.
