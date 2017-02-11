@@ -21,7 +21,7 @@ all:
 		$(SRCDIR)/main.c			\
 		$(SRCDIR)/encoder.c			\
 		$(SRCDIR)/tick.c			\
-		$(SRCDIR)/voltage.c			\
+		$(SRCDIR)/voltmeter.c			\
 		$(SRCDIR)/spi.c				\
 		$(SRCDIR)/adc.c				\
 		$(SRCDIR)/ad9837.c			\

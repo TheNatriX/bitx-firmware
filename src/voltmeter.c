@@ -13,6 +13,7 @@
 static uint16_t adc_value;
 
 
+/* TODO: this ISR must be moved into adc.c */
 ISR(ADC_vect)
 {
 	adc_value = (ADCL & 0xfffc);
