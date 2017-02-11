@@ -4,6 +4,16 @@
 #include "mcu.h"
 
 
+static uint16_t adc_value;
+
+
+ISR(ADC_vect)
+{
+	adc_value = ADCL;
+	adc_value |= ((ADCH & 0x03) << 8);
+}
+
+
 extern void inline
 adc_init(void)
 {
@@ -18,10 +28,12 @@ adc_init(void)
 		 (1 << ADPS2)	|	/* ADC Clock Prescaler  */
 		 (1 << ADPS1)	|	/* ADC Clock Prescaler  */
 		 (1 << ADPS0);		/* ADC Clock Prescaler  */
+
+	adc_value = (uint8_t) 0;
 }
 
 
-extern void
+extern uint16_t
 adc_start_conversion(uint8_t pin)
 {
 	/*
@@ -48,5 +60,7 @@ adc_start_conversion(uint8_t pin)
 
 	/*	Restore MCUCR			*/
 	MCUCR = saved;
+
+	return adc_value;
 }
 

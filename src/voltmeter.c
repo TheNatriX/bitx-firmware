@@ -10,25 +10,15 @@
 #define ADC_TO_BAT_VOLTAGE(x)		(((2.519 * (float) (x)) / 1024) * 7.77)
 
 
-static uint16_t adc_value;
-
-
-/* TODO: this ISR must be moved into adc.c */
-ISR(ADC_vect)
-{
-	adc_value = (ADCL & 0xfffc);
-	adc_value |= ((ADCH & 0x03) << 8);
-}
-
-
 extern void
 show_voltage(void)
 {
 	char buffer[8];
 	static char last_buffer[8] = "";
+	uint16_t adc_value;
 
 	/*	Read battery voltage	*/
-	adc_start_conversion(PA0); // <--- replace PA0
+	adc_value = adc_start_conversion(PA0); // <--- replace PA0
 	/*	Make it human readable	*/
 	sprintf(buffer, "%4.1fV", ADC_TO_BAT_VOLTAGE(adc_value));
 	/**	Don't write it to LCD if
