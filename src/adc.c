@@ -3,18 +3,23 @@
 #include <avr/interrupt.h>
 #include "mcu.h"
 
+
 extern void inline
 adc_init(void)
 {
-	/*	Set VREF 2.56V			*/
-	ADMUX = (uint8_t) (1 << REFS1) | (1 << REFS0);
+	/* Set VREF 2.56V */
+	ADMUX = (uint8_t) \
+		(1 << REFS1) |
+		(1 << REFS0);
 
-	ADCSRA = (uint8_t) (1 << ADIE) |	/* Enable ADC Interrupt */
-			(1 << ADEN)    |	/* Enable ADC Circuitry */
-			(1 << ADPS2)   |	/* ADC Clock Prescaler  */
-			(1 << ADPS1)   |	/* ADC Clock Prescaler  */
-			(1 << ADPS0);		/* ADC Clock Prescaler  */
+	ADCSRA = (uint8_t) \
+		 (1 << ADIE)	|	/* Enable ADC Interrupt */
+		 (0 << ADEN)	|	/* Enable ADC Circuitry */
+		 (1 << ADPS2)	|	/* ADC Clock Prescaler  */
+		 (1 << ADPS1)	|	/* ADC Clock Prescaler  */
+		 (1 << ADPS0);		/* ADC Clock Prescaler  */
 }
+
 
 extern void
 adc_start_conversion(uint8_t pin)
@@ -29,11 +34,17 @@ adc_start_conversion(uint8_t pin)
 	ADMUX &= 0xe0;
 	ADMUX |= (uint8_t) (pin & 0x1f);
 
+	/*	Enable ADC Circuitry		*/
+	ADCSRA |= (1 << ADEN);
+
 	/*	ADC Noise Reduction Sleep Mode	*/
 	set_sleep_mode(SLEEP_MODE_ADC);
 	sleep_enable();
 	sei();
 	sleep_cpu();
+
+	/*	Disable ADC Circuitry		*/
+	ADCSRA &= ~(1 << ADEN);
 
 	/*	Restore MCUCR			*/
 	MCUCR = saved;
