@@ -1,6 +1,6 @@
 MCU=atmega32
 F_CPU=16000000
-VERSION=\"v1.21\"
+VERSION=\"v1.25\"
 
 BINDIR=bin
 SRCDIR=src

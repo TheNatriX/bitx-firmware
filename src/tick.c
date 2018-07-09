@@ -3,7 +3,7 @@
 #include <avr/interrupt.h>
 
 
-static uint8_t tick_overflow;
+static volatile uint8_t tick_overflow;
 
 
 ISR(TIMER1_OVF_vect)
@@ -72,6 +72,7 @@ uint8_t tick(void)
 
 	/* Save MCUCR, it will be restored back later */
 	uint8_t mcucr = MCUCR;
+tick_overflow = (uint8_t) 0;
 
 	set_sleep_mode(SLEEP_MODE_IDLE);
 	sleep_enable();
@@ -87,7 +88,9 @@ uint8_t tick(void)
 	MCUCR = mcucr;
 
 	/* Return TRUE when waking the CPU up by TIMER1_OVF */
-	return tick_overflow;
+	//return tick_overflow;
+	if (tick_overflow) return 1;
+	else return 0;
 }
 
 

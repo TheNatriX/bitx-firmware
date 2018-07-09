@@ -30,19 +30,25 @@ static uint8_t isr_lock = 0;
 
 ISR(INT0_vect)
 {
-	if (!isr_lock)
+	if (!isr_lock) {
 		isr_lock = 1;
-	else if (!event)
+	} else if (!event) {
 		event = DIAL_DOWN;
+	} else {
+		isr_lock = 0;
+	}
 }
 
 
 ISR(INT1_vect)
 {
-	if (!isr_lock)
+	if (!isr_lock) {
 		isr_lock = 1;
-	else if (!event) 
+	} else if (!event) {
 		event = DIAL_UP;
+	} else {
+		isr_lock = 0;
+	}
 }
 
 
@@ -149,7 +155,7 @@ int main(void)
 	lcd_send_instr(LCD_INSTR_SET_DDRAM | LCD_FREQ_POSITION);
 	lcd_print(buffer);
 	lcd_send_instr(LCD_INSTR_SET_DDRAM | 0x40);
-	lcd_print("  YO3HXT  "VERSION"  ");
+	lcd_print("  YO3BN   "VERSION"  ");
 
 	for (;;) {
 
@@ -162,12 +168,18 @@ int main(void)
 				skip_voltage_reading = 0;
 				show_voltage();
 			}
+			/* FIXME: reset rotary direction hack */
+			if ((skip_voltage_reading % 10) == 0) {
+				clear_events();
+			}
 
 			/* TODO: READ Smeter */
+		} else {
+			if (event) {
+				process_event();
+				skip_voltage_reading = 0;
+			}
 		}
-
-		if (event)
-			process_event();
 	}
 	return -1;
 }
